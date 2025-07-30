@@ -148,7 +148,7 @@ router.get('/', authMiddleware, async (req, res) => {
       .sort({ timestamp: -1 })
       .limit(5);
 
-    logger.info('Recommendations fetched', { userId, count: recommendations.length });
+    // logger.info('Recommendations fetched', { userId, count: recommendations.length });
     res.status(200).json(recommendations);
   } catch (error) {
     logger.error('Error fetching recommendations:', error);
