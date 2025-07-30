@@ -43,12 +43,12 @@ router.post('/', authMiddleware, async (req, res) => {
     if (latestScreenTime && latestMood) {
       const totalTime = latestScreenTime.totalTime / 60; // Convert to minutes
       const mood = latestMood.mood.toLowerCase();
-      console.log('Evaluating recommendation with:', { totalTime, mood, timestamp: latestMood.timestamp, rawTotalTime: latestScreenTime.totalTime }); // Enhanced debug log
+      console.log('Evaluating recommendation with:', { totalTime, mood, timestamp: latestMood.timestamp, rawTotalTime: latestScreenTime.totalTime });
 
       // Check most specific conditions first
       if (totalTime > 300 && mood === 'stressed') {
         try {
-          const playlistResponse = await axios.get(`http://localhost:5000/spotify/playlist?mood=calm`, {
+          const playlistResponse = await axios.get(`${process.env.BACKEND_URL}/spotify/playlist?mood=calm`, {
             headers: { Authorization: req.headers.authorization },
           });
           const { spotifyPlaylistId, name } = playlistResponse.data;
@@ -68,20 +68,25 @@ router.post('/', authMiddleware, async (req, res) => {
           recommendation.triggerNote += ` (Spotify API failed: ${spotifyError.message})`;
         }
       } else if (totalTime > 180 && mood === 'tired') {
-        const playlistResponse = await axios.get(`http://localhost:5000/spotify/playlist?mood=tired`, {
-          headers: { Authorization: req.headers.authorization },
-        });
-        const { spotifyPlaylistId, name } = playlistResponse.data;
-        recommendation = {
-          type: 'music',
-          details: {
-            playlistId: spotifyPlaylistId,
-            name,
-          },
-          trigger: { screenTime: '>3h', mood: 'tired' },
-          triggerSource: 'mood',
-          triggerNote: 'Music suggested for tiredness',
-        };
+        try {
+          const playlistResponse = await axios.get(`${process.env.BACKEND_URL}/spotify/playlist?mood=tired`, {
+            headers: { Authorization: req.headers.authorization },
+          });
+          const { spotifyPlaylistId, name } = playlistResponse.data;
+          recommendation = {
+            type: 'music',
+            details: {
+              playlistId: spotifyPlaylistId,
+              name,
+            },
+            trigger: { screenTime: '>3h', mood: 'tired' },
+            triggerSource: 'mood',
+            triggerNote: 'Music suggested for tiredness',
+          };
+        } catch (spotifyError) {
+          console.error('Spotify API error:', spotifyError.message);
+          recommendation.triggerNote += ` (Spotify API failed: ${spotifyError.message})`;
+        }
       } else if (mood === 'happy') {
         recommendation = {
           type: 'message',
