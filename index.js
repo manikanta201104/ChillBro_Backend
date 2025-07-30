@@ -30,15 +30,24 @@ export const logger = winston.createLogger({
 const app = express();
 
 // Configure CORS to allow Chrome extension origin
+const allowedOrigins = [
+  'http://localhost:3000',
+  'chrome-extension://cohlihkpndpeoklcbgcgaobmoojpdhpg'
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000', // React frontend
-    'chrome-extension://<your-extension-id>', // Replace with your extension ID
-    '*'
-  ],
-  methods: ['GET', 'POST', 'PATCH', 'OPTIONS','DELETE'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PATCH', 'OPTIONS', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true // Optional: only if you're using cookies/auth headers
 }));
+
 
 app.use(express.json());
 
