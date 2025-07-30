@@ -63,7 +63,7 @@ router.get('/latest', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'No mood data found for this user' });
     }
 
-    logger.info('Latest mood fetched', { userId, mood: latestMood.mood, timestamp: latestMood.timestamp });
+    // logger.info('Latest mood fetched', { userId, mood: latestMood.mood, timestamp: latestMood.timestamp });
     res.status(200).json(latestMood);
   } catch (error) {
     logger.error('Error fetching latest mood:', error);
