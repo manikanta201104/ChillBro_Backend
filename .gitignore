@@ -117,4 +117,4 @@ dist
 
 # Custom local files to ignore
 clearData.js
-screenTime.js
+clearscreenTime.js
